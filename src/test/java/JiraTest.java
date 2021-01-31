@@ -1,6 +1,8 @@
 import io.restassured.RestAssured;
 import io.restassured.filter.session.SessionFilter;
 
+import java.io.File;
+
 import static io.restassured.RestAssured.given;
 
 public class JiraTest {
@@ -26,7 +28,7 @@ public class JiraTest {
                 header("Content-Type","application/json").
                 filter(sessionFilter).
                 body("{\n" +
-                        "    \"body\": \"S3. Pellentesque eget venenatis elit. Duis eu justo eget augue iaculis fermentum. Sed semper quam laoreet nisi egestas at posuere augue semper.\",\n" +
+                        "    \"body\": \"New Comment.\",\n" +
                         "    \"visibility\": {\n" +
                         "        \"type\": \"role\",\n" +
                         "        \"value\": \"Administrators\"\n" +
@@ -34,5 +36,14 @@ public class JiraTest {
                         "}").
                 log().all().when().
                 post("/rest/api/2/issue/{key}/comment").then().assertThat().statusCode(201);
+
+        // Add attachment
+        given().header("X-Atlassian-Token", "no-check").filter(sessionFilter).
+                header("Content-Type","multipart/form-data").
+                multiPart("file", new File("Jira.txt")).when().
+                post("rest/api/2/issue/10001/attachments").then().log().all().
+                assertThat().statusCode(200);
+
+
     }
 }
